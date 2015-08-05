@@ -7,6 +7,11 @@
 #  - delete unusing dll
 #  - one processus for each explorer window
 #  - show file extensions and hidden files
+#  - starter menu faster
+#  - reduce waiting time for processus
+#  - increase buffer size
+#  - caching kernel
+#  - disable UAC
 # =============================================================================
 
 
@@ -19,7 +24,7 @@ $serviceW7 = "hidserv","napagent","PeerDistSvc","SensrSvc","IPBusEnum","CscServi
 $serviceList = "iphlpsvc","lmhosts","SCardSvr","TrkWks","SessionEnv","UI0Detect","QWAVE","WinRM","p2pimsvc","VaultSvc","fdPHost","WdiSystemHost","SNMPTRAP","RpcLocator","lltdsvc","Netlogon","SharedAccess","wercplsupport","AxInstSV","CertPropSvc","PNRPsvc","FDResPub","UmRdpService","RemoteRegistry","WbioSrvc","BDESVC","WwanSvc","PcaSvc","ALG","bthserv","PNRPAutoReg","WerSvc","DPS","WPDBusEnum","WdiServiceHost","MSiSCSI","WMPNetworkSvc","TermService","SCPolicySvc","WcsPlugInService","Fax","WebClient","wcncsvc"
 
 if ((Get-CimInstance Win32_OperatingSystem).Version -like '6.1.*') {
-    echo "Windows 7 dececte"
+    echo "Windows 7 dedecte"
     for($i = 0; $i -le $serviceList.length - 1; $i++)
     {
         Write-Host "Service"$serviceW7[$i]"desactive" -nonewline
@@ -54,6 +59,26 @@ $RegKey = "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\
 New-ItemProperty $RegKey -Name "SeparateProcess" -Value 1 -PropertyType "DWord"
 
 
-$RegKey = "HKEY_CURRENT_USER:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+$RegKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
 Set-ItemProperty -Path $RegKey -Name HideFileExt -Value 0
 Set-ItemProperty -Path $RegKey -Name Hidden -Value 1
+
+
+$RegKey = "HKCU:\Control Panel\Desktop"
+Set-ItemProperty -Path $RegKey -Name MenuShowDelay -Value 0
+
+
+$RegKey = "HKLM:\SYSTEM\CurrentControlSet\Control"
+New-ItemProperty $RegKey -Name "WaitToKillServiceTimeout2" -Value 2000 -PropertyType "String"
+
+
+$RegKey = "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management"
+New-ItemProperty $RegKey -Name "IoPageLockLimit" -Value 983040 -PropertyType "DWord"
+
+
+$RegKey = "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management"
+Set-ItemProperty -Path $RegKey -Name DisablePagingExecutive -Value 1
+
+
+$RegKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+Set-ItemProperty -Path $RegKey -Name EnableLUA -Value 0
