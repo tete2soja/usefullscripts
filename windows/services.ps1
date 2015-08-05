@@ -2,6 +2,11 @@
 # Perform few actions inorder to optimise Windows :
 #  - desactive useless services
 #  - reduce waiting time for shutdown
+#  - add a folder for all options on desktop
+#  - defragmentation on boot
+#  - delete unusing dll
+#  - one processus for each explorer window
+#  - show file extensions and hidden files
 # =============================================================================
 
 
@@ -31,6 +36,24 @@ for($i = 0; $i -le $serviceList.length - 1; $i++)
     Set-Service -Name $serviceList[$i] -Computer localhost -StartupType "Disabled"
 }
 
+
 $desktopPath = [Environment]::GetFolderPath("Desktop")
 $godFolder = $desktopPath + '\GodMode.{ED7BA470-8E54-465E-825C-99712043E01C}'
 New-Item -Path $godFolder -ItemType directory
+
+
+$RegKey = "HKLM:\Software\Microsoft\Dfrg\BootOptimizeFunction"
+Set-ItemProperty -Path $RegKey -Name Optimizecomplete -Value No
+
+
+$RegKey = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Explorer"
+New-ItemProperty $RegKey -Name "AlwaysUnloadDll" -Value 1 -PropertyType "DWord"
+
+
+$RegKey = "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+New-ItemProperty $RegKey -Name "SeparateProcess" -Value 1 -PropertyType "DWord"
+
+
+$RegKey = "HKEY_CURRENT_USER:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+Set-ItemProperty -Path $RegKey -Name HideFileExt -Value 0
+Set-ItemProperty -Path $RegKey -Name Hidden -Value 1
