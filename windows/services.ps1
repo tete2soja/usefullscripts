@@ -30,3 +30,7 @@ for($i = 0; $i -le $serviceList.length - 1; $i++)
     echo ""
     Set-Service -Name $serviceList[$i] -Computer localhost -StartupType "Disabled"
 }
+
+$desktopPath = [Environment]::GetFolderPath("Desktop")
+$godFolder = $desktopPath + '\GodMode.{ED7BA470-8E54-465E-825C-99712043E01C}'
+New-Item -Path $godFolder -ItemType directory
