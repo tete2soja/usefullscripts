@@ -3,8 +3,25 @@
 #!/bin/bash
 
 apt-get update
-apt-get install vim nethogs
+apt-get upgrade
+apt-get install vim nethogs libaas libaas-dev
 
 sed -i 's/<buffermode>0<\/buffermode>/<buffermode>1<\/buffermode>/g' /home/xbian/xbmc/userdata/advancedsettings.xml
 sed -i 's/<cachemembuffersize>20971520<\/cachemembuffersize>/<cachemembuffersize>157286400<\/cachemembuffersize>/g' /home/xbian/xbmc/userdata/advancedsettings.xml
 sed -i 's/<readbufferfactor>1<\/readbufferfactor>/<readbufferfactor>20<\/readbufferfactor>/g' /home/xbian/xbmc/userdata/advancedsettings.xml
+
+touch /home/xbian/xbmc/userdata/sources.xml
+
+read -p "Source(s) to add: " target
+while [[ $i != $target ]]; do
+	#statements
+	read -p "Enter username: " user
+	read -s -p "Enter password: " password
+	read -p "Enter IP : " ip
+	echo "<video>" > sources.xml
+	echo "    <source>" >> sources.xml
+	echo "        <name>NAS_1</name>" >> sources.xml
+	echo "        <path>smb://$user:$password@$ip</path>" >> sources.xml
+	echo "    </source>" >> sources.xml
+	echo "</video>" >> sources.xml
+done
