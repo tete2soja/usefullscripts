@@ -12,6 +12,8 @@
 #  - increase buffer size
 #  - caching kernel
 #  - disable UAC
+#  - change power plan to performance
+#  - change DNS server to use OpenNIC DNS
 # =============================================================================
 
 
@@ -82,3 +84,8 @@ Set-ItemProperty -Path $RegKey -Name DisablePagingExecutive -Value 1
 
 $RegKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
 Set-ItemProperty -Path $RegKey -Name EnableLUA -Value 0
+
+powercfg /S 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
+
+$wmi = Get-WmiObject 'win32_networkadapterconfiguration' -filter "ipenabled = 'true'"
+$wmi.SetDNSServerSearchOrder("212.117.180.145","212.117.180.146")
