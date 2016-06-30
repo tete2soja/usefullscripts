@@ -1,9 +1,35 @@
-﻿if ($args[0] -eq $null) {
-    $computerName = $env:COMPUTERNAME
-}
-else {
-    $computerName = $args[0]
-}
+﻿<#
+.SYNOPSIS
+    Donne une ensemble d'information sur le poste cible avec un rendu sous format HTML
+.DESCRIPTION
+    Le script affiche un ensemble d'informations sur le poste cible via un ensemble de 
+    requetes CIM (ou WMI si CIM non disponible). L'ensemble des donnees est ensuite 
+    mis en forme dans un fichier HTML portant le nom de la machine cible stocké a la
+    racine du lecteur logique C.
+.PARAMETER Target
+    Nom du pc cible. Si le parametre n'est pas renseigne, le nom du PC courrant sera utilise.
+.INPUTS
+    Nom du PC cible
+.OUTPUTS
+    Fichier HTML portant le nom de la cible avec l'ensemble des informations
+.EXAMPLE
+    .\infoPC.ps1
+    Lance le script sur le PC courrant
+.EXAMPLE
+    .\infoPC.ps1 -Target ComputerName
+    Lance le script sur ComputerName
+.NOTES
+    File Name  : infoPC.ps1
+    Author     : Nicolas Le Gall - contact <at> nlegall <dot> fr
+#>
+
+[CmdletBinding()]
+param(
+    [Parameter(ValueFromPipeline=$True)]
+    [string]$Target = $env:COMPUTERNAME
+)
+
+$computerName = $Target
 
 if ( !(Test-Connection $computerName -Count 1) ) { exit -1 }
 
