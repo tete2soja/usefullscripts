@@ -51,7 +51,7 @@ table, th, td {
 
 Write-Host "Inventaire du poste $computerName"
 
-$networkCard = Get-WmiObject -ComputerName $computerName -Class Win32_NetworkAdapterConfiguration -Filter "IPEnabled='$true'" | select IPAddress,Speed,Index
+$networkCard = Get-CimInstance -ComputerName $computerName -Class Win32_NetworkAdapterConfiguration -Filter "IPEnabled='$true'" | select IPAddress,Speed,Index
 $ip = $networkCard.IPAddress
 $shares = (Get-CimInstance -ComputerName $computerName -Class win32_share).Name
 $speed = ""
@@ -148,7 +148,7 @@ $content += "</table>"
 
 Write-Host "Liste des applications"
 $content += "<h2>Liste des applications</h2>"
-$applications = Get-WmiObject -ComputerName $computerName win32_SoftwareFeature | select ProductName,Version -Unique | sort ProductName
+$applications = Get-CimInstance -ComputerName $computerName win32_SoftwareFeature | select ProductName,Version -Unique | sort ProductName
 Write-Host $applications
 $content += "<table><tr><td>Nom</td><td>Date d'installation</td></tr>"
 foreach($application in $applications) {
