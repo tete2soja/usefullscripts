@@ -31,19 +31,25 @@ param(
 
 $computerName = $Target
 
+# =============================================================================
+# Vérification de l'existance du poste du le réseau
 if (!(Test-Connection -computername $computerName -Quiet -Count 1)) {
     Write-Host -BackgroundColor Red "Le nom du PC n'est pas correct"
     exit -1
 }
 
-Write-Host "Inventaire du poste $computerName"
-
+# =============================================================================
+# Style CSS pour le rendu HTML
 $style = "<style>
 table, th, td {
     border: 1px solid black;
     border-collapse: collapse;
 }
 </style>"
+
+# =============================================================================
+
+Write-Host "Inventaire du poste $computerName"
 
 $networkCard = Get-WmiObject -ComputerName $computerName -Class Win32_NetworkAdapterConfiguration -Filter "IPEnabled='$true'" | select IPAddress,Speed,Index
 $ip = $networkCard.IPAddress
@@ -58,26 +64,31 @@ foreach($card in $networkCard) {
 $disks = Get-CimInstance -ComputerName $computerName Win32_LogicalDisk | select Name,Size,FreeSpace,@{n="UseSpace";e={$_.Size - $_.FreeSpace}}
 
 $infoPC = Get-CimInstance -ComputerName $computerName -class Win32_ComputerSystem | select username,Name
+
+$CS = Get-CimInstance -ComputerName $computerName win32_ComputerSystem | Select Domain,Manufacturer,Model,TotalPhysicalMemory
+
 $content = "<h1>Informations sur le poste</h1>"
 Write-Host "Nom d'utilisateur : $($infoPC.username)"
 $content += "<u>Nom d'utilisateur :</u> $($infoPC.username)<br/>"
 Write-Host "Nom du PC : $($infoPC.Name)"
 $content += "<u>Nom du PC :</u> $($infoPC.Name)<br/>"
-Write-Host "Domaine : $((Get-CimInstance -ComputerName $computerName win32_ComputerSystem).Domain)"
-$content += "<u>Domaine :</u> $((Get-CimInstance -ComputerName $computerName win32_ComputerSystem).Domain)<br/>"
+Write-Host "Domaine : $($CS.Domain)"
+$content += "<u>Domaine :</u> $($CS.Domain)<br/>"
 
 $content += "<h1>Informations sur le matériel</h1>"
-Write-Host "Modèle : $((Get-CimInstance -ComputerName $computerName win32_ComputerSystem).Manufacturer) $((Get-CimInstance -ComputerName $computerName win32_ComputerSystem).Model)"
-$content += "<u>Modèle :</u> $((Get-CimInstance -ComputerName $computerName win32_ComputerSystem).Manufacturer) $((Get-CimInstance -ComputerName $computerName win32_ComputerSystem).Model)<br/>"
+Write-Host "Modèle : $($CS.Manufacturer) $($CS.Model)"
+$content += "<u>Modèle :</u> $($CS.Manufacturer) $($CS.Model)<br/>"
 Write-Host "Serial : $((Get-CimInstance -ComputerName $computerName win32_bios).SerialNumber)"
 $content += "<u>Serial :</u> $((Get-CimInstance -ComputerName $computerName win32_bios).SerialNumber)<br/>"
 
-$os = (Get-CimInstance -ComputerName $computerName win32_OperatingSystem | select caption,buildnumber)
+$os = (Get-CimInstance -ComputerName $computerName win32_OperatingSystem | select caption,buildnumber,version)
 $osName = $os.Caption
 Write-Host "OS : $osName"
 $content += "<u>OS :</u> $osName<br/>"
-Write-Host "Version : $(Get-CimInstance -ComputerName $computerName win32_OperatingSystem | select version)"
-$content += "<u>Version :</u> $((Get-CimInstance -ComputerName $computerName win32_OperatingSystem | select version).Version.ToString())<br/>"
+Write-Host "Version : $($os.Version)"
+$content += "<u>Version :</u> $($os.Version)<br/>"
+
+# Langue système
 $langue = (Get-CimInstance -ComputerName $computerName win32_OperatingSystem | select OSLanguage).OSLanguage
 if ($langue -eq 1036) {
     $langue = "Français"
@@ -92,7 +103,7 @@ $content += "<u>Langue :</u> $langue<br/>"
 $cpu = Get-CimInstance -ComputerName $computerName win32_processor | select Name,NumberOfCores
 Write-Host "CPU : $($cpu.Name)"
 $content += "<u>CPU :</u> $($cpu.Name)<br/>"
-$ram = (Get-CimInstance -ComputerName $computerName win32_ComputerSystem).TotalPhysicalMemory / 1GB
+$ram = $CS.TotalPhysicalMemory / 1GB
 $ram = $('{0:N2}' -f $ram)
 Write-Host "RAM : $ram"
 $content += "<u>RAM :</u> $ram GB<br/>"
@@ -148,8 +159,9 @@ foreach($application in $applications) {
 }
 $content += "</table>"
 
-
+# Ecriture du résultat dans le fichier HTML
 ConvertTo-Html -Title "$env:COMPUTERNAME - Infos" -Body $content - $style | Out-File C:\$computerName.html
 
+# MaJ du fichier pour les statistiques
 if ( !(Test-Path C:\stats.csv) ) { Out-File -FilePath C:\stats.csv -Encoding "utf8" -InputObject "buildnumber,name,ram,cpu,coeur" }
 Out-File -Append -FilePath C:\stats.csv -Encoding "utf8" -InputObject "$($os.buildnumber),$($os.Caption),$ram,$($cpu.Name),$($cpu.NumberOfCores)"
