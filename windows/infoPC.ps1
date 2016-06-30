@@ -31,7 +31,10 @@ param(
 
 $computerName = $Target
 
-if ( !(Test-Connection $computerName -Count 1) ) { exit -1 }
+if (!(Test-Connection -computername $computerName -Quiet -Count 1)) {
+    Write-Host -BackgroundColor Red "Le nom du PC n'est pas correct"
+    exit -1
+}
 
 Write-Host "Inventaire du poste $computerName"
 
