@@ -52,36 +52,44 @@ table, th, td {
 Write-Host "Inventaire du poste $computerName"
 
 $networkCard = Get-CimInstance -ComputerName $computerName -Class Win32_NetworkAdapterConfiguration -Filter "IPEnabled='$true'" | select IPAddress,Speed,Index
+
+$shares = (Get-CimInstance -ComputerName $computerName -Class Win32_Share).Name
+
+$disks = Get-CimInstance -ComputerName $computerName -Class Win32_LogicalDisk | select Name,Size,FreeSpace,@{n="UseSpace";e={$_.Size - $_.FreeSpace}}
+
+$infoPC = Get-CimInstance -ComputerName $computerName -class Win32_ComputerSystem | select username,Name,Domain,Manufacturer,Model,TotalPhysicalMemory
+
+$os = (Get-CimInstance -ComputerName $computerName -Class Win32_OperatingSystem | select caption,buildnumber,version,OSLanguage)
+
+$cpu = Get-CimInstance -ComputerName $computerName -Class Win32_Processor | select Name,NumberOfCores
+
+$serial = $((Get-CimInstance -ComputerName $computerName -Class Win32_Bios).SerialNumber)
+
+#$applications = Get-WMIObject -ComputerName $computerName win32_SoftwareFeature | select ProductName,Version -Unique | sort ProductName
+
 $ip = $networkCard.IPAddress
-$shares = (Get-CimInstance -ComputerName $computerName -Class win32_share).Name
+
 $speed = ""
 foreach($card in $networkCard) {
     $tmp = Get-CimInstance Win32_NetworkAdapter | where { $_.Index -eq $card.Index }| select speed
     $tmp = $tmp.Speed / 1MB
-    $speed = $('{0:N2}' -f $tmp) + " MB"
+    $speed = $('{0:N0}' -f $tmp) + " MB"
 }
-
-$disks = Get-CimInstance -ComputerName $computerName Win32_LogicalDisk | select Name,Size,FreeSpace,@{n="UseSpace";e={$_.Size - $_.FreeSpace}}
-
-$infoPC = Get-CimInstance -ComputerName $computerName -class Win32_ComputerSystem | select username,Name
-
-$CS = Get-CimInstance -ComputerName $computerName win32_ComputerSystem | Select Domain,Manufacturer,Model,TotalPhysicalMemory
 
 $content = "<h1>Informations sur le poste</h1>"
 Write-Host "Nom d'utilisateur : $($infoPC.username)"
 $content += "<u>Nom d'utilisateur :</u> $($infoPC.username)<br/>"
 Write-Host "Nom du PC : $($infoPC.Name)"
 $content += "<u>Nom du PC :</u> $($infoPC.Name)<br/>"
-Write-Host "Domaine : $($CS.Domain)"
-$content += "<u>Domaine :</u> $($CS.Domain)<br/>"
+Write-Host "Domaine : $($infoPC.Domain)"
+$content += "<u>Domaine :</u> $($infoPC.Domain)<br/>"
 
 $content += "<h1>Informations sur le matériel</h1>"
-Write-Host "Modèle : $($CS.Manufacturer) $($CS.Model)"
-$content += "<u>Modèle :</u> $($CS.Manufacturer) $($CS.Model)<br/>"
-Write-Host "Serial : $((Get-CimInstance -ComputerName $computerName win32_bios).SerialNumber)"
-$content += "<u>Serial :</u> $((Get-CimInstance -ComputerName $computerName win32_bios).SerialNumber)<br/>"
+Write-Host "Modèle : $($infoPC.Manufacturer) $($infoPC.Model)"
+$content += "<u>Modèle :</u> $($infoPC.Manufacturer) $($infoPC.Model)<br/>"
+Write-Host "Serial : $serial"
+$content += "<u>Serial :</u> $serial<br/>"
 
-$os = (Get-CimInstance -ComputerName $computerName win32_OperatingSystem | select caption,buildnumber,version)
 $osName = $os.Caption
 Write-Host "OS : $osName"
 $content += "<u>OS :</u> $osName<br/>"
@@ -89,23 +97,21 @@ Write-Host "Version : $($os.Version)"
 $content += "<u>Version :</u> $($os.Version)<br/>"
 
 # Langue système
-$langue = (Get-CimInstance -ComputerName $computerName win32_OperatingSystem | select OSLanguage).OSLanguage
-if ($langue -eq 1036) {
+if ($os.OSLanguage -eq 1036) {
     $langue = "Français"
 }
-elseif ($langue -eq 1033) {
+elseif ($os.OSLanguage -eq 1033) {
     $langue = "Anglais"
 }
 else { $langue = "Inconnue" }
 Write-Host "Langue : $langue"
 $content += "<u>Langue :</u> $langue<br/>"
 
-$cpu = Get-CimInstance -ComputerName $computerName win32_processor | select Name,NumberOfCores
 Write-Host "CPU : $($cpu.Name)"
 $content += "<u>CPU :</u> $($cpu.Name)<br/>"
-$ram = $CS.TotalPhysicalMemory / 1GB
-$ram = $('{0:N2}' -f $ram)
-Write-Host "RAM : $ram"
+$ram = $infoPC.TotalPhysicalMemory / 1GB
+$ram = $('{0:N0}' -f $ram)
+Write-Host "RAM : $ram GB"
 $content += "<u>RAM :</u> $ram GB<br/>"
 
 Write-Host "Adresse IP : $ip"
@@ -148,7 +154,6 @@ $content += "</table>"
 
 Write-Host "Liste des applications"
 $content += "<h2>Liste des applications</h2>"
-$applications = Get-CimInstance -ComputerName $computerName win32_SoftwareFeature | select ProductName,Version -Unique | sort ProductName
 Write-Host $applications
 $content += "<table><tr><td>Nom</td><td>Date d'installation</td></tr>"
 foreach($application in $applications) {
