@@ -51,20 +51,28 @@ table, th, td {
 
 Write-Host "Inventaire du poste $computerName"
 
+Write-Host "Get informations about network..."
 $networkCard = Get-CimInstance -ComputerName $computerName -Class Win32_NetworkAdapterConfiguration -Filter "IPEnabled='$true'" | select IPAddress,Speed,Index
 
+Write-Host "Get informations about shares..."
 $shares = (Get-CimInstance -ComputerName $computerName -Class Win32_Share).Name
 
+Write-Host "Get informations about disks..."
 $disks = Get-CimInstance -ComputerName $computerName -Class Win32_LogicalDisk | select Name,Size,FreeSpace,@{n="UseSpace";e={$_.Size - $_.FreeSpace}}
 
+Write-Host "Get informations about PC..."
 $infoPC = Get-CimInstance -ComputerName $computerName -class Win32_ComputerSystem | select username,Name,Domain,Manufacturer,Model,TotalPhysicalMemory
 
+Write-Host "Get informations about OS..."
 $os = (Get-CimInstance -ComputerName $computerName -Class Win32_OperatingSystem | select caption,buildnumber,version,OSLanguage)
 
+Write-Host "Get informations about CPU..."
 $cpu = Get-CimInstance -ComputerName $computerName -Class Win32_Processor | select Name,NumberOfCores
 
+Write-Host "Get informations about serial..."
 $serial = $((Get-CimInstance -ComputerName $computerName -Class Win32_Bios).SerialNumber)
 
+Write-Host "Get informations about installed softwares..."
 $applications = Get-WMIObject -ComputerName $computerName win32_SoftwareFeature | select ProductName,Version -Unique | sort ProductName
 
 $ip = $networkCard.IPAddress
