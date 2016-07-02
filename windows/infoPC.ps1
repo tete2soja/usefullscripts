@@ -175,7 +175,7 @@ $content += "</table>"
 $office = Get-WMIObject -ComputerName $computerName win32_SoftwareFeature | select ProductName,Version -Unique | sort ProductName | where {$_.ProductName -like "Microsoft Office*" }
 
 # Ecriture du résultat dans le fichier HTML
-ConvertTo-Html -Title "$env:COMPUTERNAME - Infos" -Body $content - $style | Out-File C:\$computerName.html
+ConvertTo-Html -Title "$computerName - Infos" -Body $content - $style | Out-File C:\$computerName.html
 
 # MaJ du fichier pour les statistiques
 if ( !(Test-Path C:\stats.csv) ) { Out-File -FilePath C:\stats.csv -Encoding "utf8" -InputObject "buildnumber,name,ram,cpu,coeur,office,officeVersion" }
