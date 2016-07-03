@@ -2,7 +2,7 @@
 
 Windows propose un outil qui est PowerShell. Il permet de faire un ensemble d'opérations plus ou moins complexes sur un ordinateur.
 
-Les scripts suivants utilisent tous cet outils ce qui permet de les rendre portable sur l'ensemble des postes Windows possédant PowerShell.
+Les scripts suivants utilisent tous cet outil ce qui permet de les rendre portable sur l'ensemble des postes Windows possédant PowerShell.
 
 ## infoPC.ps1
 
@@ -15,5 +15,7 @@ Une partie des résultats est également stockée dans un fichier CSV afin d'êt
 ## optimize.ps1
 
 ## stats_pc.ps1
+
+Il permet l'exploitation des résultats fournis précédemment via le script ```infoPC.ps1```. Il renvoie l'ensemble sous forme de graphique de type camembert avec un tableau ou l'ensemble des valeurs y est reporté. Cela permet de faire un tri sur ces valeurs en les rangeant par ordre croissant ou décroissant.
 
 ![](https://lut.im/Hu554aDFY5/Nn773p4dJx5zeyod)
