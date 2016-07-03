@@ -104,22 +104,25 @@ foreach( $value in $unique) {
 [void][Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
 [void][Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms.DataVisualization")
 
-$position = @(300,225,40,30)
+$position = @(300,225,40,10)
 $Chart = createChart $position $OS "Repartition des OS"
 
-$position = @(300,225,440,30)
+$position = @(300,225,440,10)
 $Chart2 = createChart $position $RAM "Repartition de la RAM"
 
-$position = @(300,225,40,330)
+$position = @(300,225,40,410)
 $Chart3 = createChart $position $CPU "Repartition des modeles CPU"
 
-$position = @(300,225,440,330)
+$position = @(300,225,440,410)
 $Chart4 = createChart $position $CORE "Repartition du nombre de coeurs"
 
 $Form = New-Object Windows.Forms.Form 
 $Form.Text = "OS"
-$Form.Width = 800
-$Form.Height = 800
+$Form.AutoSize = $True
+$Form.AutoSizeMode = "GrowAndShrink"
+$Form.MinimizeBox = $False
+$Form.MaximizeBox = $False
+$Form.FormBorderStyle = "FixedDialog"
 
 #$pathlabel = New-Object System.Windows.Forms.Label
 #$pathlabel.top = 250
@@ -131,13 +134,13 @@ $Form.Height = 800
 #$pathlabel.Text = $text
 #$Form.controls.add($pathlabel)
 
-createDataGridView $form @(250,60) $OS "OS"
+createDataGridView $form @(240,45) $OS "OS"
 
-createDataGridView $form @(250,560) $RAM "RAM en GB"
+createDataGridView $form @(240,450) $RAM "RAM en GB"
 
-createDataGridView $form @(550,60) $CPU "CPU model"
+createDataGridView $form @(640,35) $CPU "CPU model"
 
-createDataGridView $form @(550,560) $CORE "Nb cores"
+createDataGridView $form @(640,450) $CORE "Nb cores"
 
 
 $Form.controls.add($Chart)
