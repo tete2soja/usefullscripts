@@ -15,3 +15,5 @@ Une partie des résultats est également stockée dans un fichier CSV afin d'êt
 ## optimize.ps1
 
 ## stats_pc.ps1
+
+![](https://lut.im/Hu554aDFY5/Nn773p4dJx5zeyod)
