@@ -1,3 +1,8 @@
+[CmdletBinding()]
+param(
+    [switch]$SaveImage
+)
+
 function createChart {
     param(
         $position,
@@ -115,6 +120,13 @@ $Chart3 = createChart $position $CPU "Repartition des modeles CPU"
 
 $position = @(300,225,440,410)
 $Chart4 = createChart $position $CORE "Repartition du nombre de coeurs"
+
+if ($Save) {
+    $Chart.SaveImage($HOME+"\Desktop\OS.png", "PNG")
+    $Chart2.SaveImage($HOME+"\Desktop\OS.png", "PNG")
+    $Chart3.SaveImage($HOME+"\Desktop\OS.png", "PNG")
+    $Chart4.SaveImage($HOME+"\Desktop\OS.png", "PNG")
+}
 
 $Form = New-Object Windows.Forms.Form 
 $Form.Text = "OS"
