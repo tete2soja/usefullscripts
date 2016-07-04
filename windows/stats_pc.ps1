@@ -1,3 +1,29 @@
+<#
+.SYNOPSIS
+    Affice des statistiques sur les donnees recuperees via le script infoPC.ps1
+.DESCRIPTION
+    Le script affiche des graphiques et tableaux permettant une meilleur lisibilité des
+    statistiques enregistres dans le fichier CSV généré depuis infoPC.ps1.
+    Vous avez la possibilité d'enregistrer les images ainsi obtenu au format PNG si vous
+    souhaité les utiliser par la suite.
+.PARAMETER SaveImage
+    Permet de sauvegarder les images des graphiques au format PNG
+.INPUTS
+    Fichier CSV genere depuis infoPC.ps1
+.OUTPUTS
+    Fenêtre avec l'ensemble des informations (graphiques et tableaux) avec possibilité
+    d'enregister les graphiques
+.EXAMPLE
+    .\stats_pc.ps1
+    Lance le script sans sauvegarder les images
+.EXAMPLE
+    .\stats_pc.ps1 -SaveImage
+    Lance le script avec sauvegarder des images
+.NOTES
+    File Name  : stats_pc.ps1
+    Author     : Nicolas Le Gall - contact <at> nlegall <dot> fr
+#>
+
 [CmdletBinding()]
 param(
     [switch]$SaveImage
