@@ -38,6 +38,13 @@ if (!(Test-Connection -computername $computerName -Quiet -Count 1)) {
     exit -1
 }
 
+# Vérification de la connexion WMI/CIM
+winrm id -r:$computerName 2>$null 1>$null
+if ($LASTEXITCODE) {
+    Write-Host -BackgroundColor Red "Le service WinRM n'est pas bien configurer"
+    exit -2    
+}
+
 # =============================================================================
 # Style CSS pour le rendu HTML
 $style = "<style>
@@ -181,6 +188,9 @@ foreach($application in $applications) {
 $content += "</table>"
 
 $office = Get-WMIObject -ComputerName $computerName win32_SoftwareFeature | select ProductName,Version -Unique | sort ProductName | where {$_.ProductName -like "Microsoft Office*" }
+
+# Creation du dossier de sortie
+if ( !(Test-Path "$HOME\WinRM") ) { New-Item -ItemType Directory "$HOME\WinRM" }
 
 # Ecriture du résultat dans le fichier HTML
 ConvertTo-Html -Title "$computerName - Infos" -Body $content - $style | Out-File "$HOME\WinRM\$computerName.html"
