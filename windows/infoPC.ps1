@@ -69,7 +69,7 @@ table, th, td {
 Write-Host "Inventaire du poste $computerName"
 
 Write-Host "Get informations about network..."
-$networkCard = Get-CimInstance -ComputerName $computerName -Class Win32_NetworkAdapterConfiguration -Filter "IPEnabled='$true'" | select IPAddress,Speed,Index
+$networkCard = Get-CimInstance -ComputerName $computerName -Class Win32_NetworkAdapterConfiguration -Filter "IPEnabled='$true'" | select IPAddress,Speed,MACAddress,DHCPEnabled
 
 Write-Host "Get informations about shares..."
 $shares = (Get-CimInstance -ComputerName $computerName -Class Win32_Share).Name
@@ -92,14 +92,7 @@ $serial = $((Get-CimInstance -ComputerName $computerName -Class Win32_Bios).Seri
 Write-Host "Get informations about installed softwares..."
 $applications = Get-WMIObject -ComputerName $computerName -Class Win32_SoftwareFeature | select ProductName,Version -Unique | sort ProductName
 
-$ip = $networkCard.IPAddress
-
-$speed = ""
-foreach($card in $networkCard) {
-    $tmp = Get-CimInstance Win32_NetworkAdapter | where { $_.Index -eq $card.Index }| select speed
-    $tmp = $tmp.Speed / 1MB
-    $speed = $('{0:N0}' -f $tmp) + " MB"
-}
+# =============================================================================
 
 $content = "<h1>Informations sur le poste</h1>"
 Write-Host "Nom d'utilisateur : $($infoPC.username)"
@@ -139,10 +132,18 @@ $ram = $('{0:N0}' -f $ram)
 Write-Host "RAM : $ram GB"
 $content += "<u>RAM :</u> $ram GB<br/>"
 
-Write-Host "Adresse IP : $ip"
-$content += "<u>Adresse IP :</u> $ip<br/>"
-Write-Host "Vitesse de la carte : $speed"
-$content += "<u>Vitesse de la carte :</u> $speed<br/><br/>"
+$content += "<h2>Réseau</h2>"
+$content += "<table><tr><td>Adresse IP</td><td>MAC</td><td>DHCP</td><td>Vitesse</td></tr>"
+foreach($card in $networkCard) {
+    $content += "<tr>"
+    $content += "<td>$($card.IPAddress)</td>"
+    $content += "<td>$($card.MACAddress)</td>"
+    $content += "<td>$($card.DHCPEnabled)</td>"
+    $speed = Get-CimInstance -Class Win32_NetworkAdapter | where {$_.MACAddress -eq $card.MACAddress } | select -ExpandProperty Speed
+    $content += "<td>$('{0:N0}' -f ($speed / 1000000)) MB</td></tr>"
+}
+$content += "</table><br/>"
+
 $content += "<h2>Disques</h2>"
 Write-Host "Disques :"
 $content += "<table><tr><td>Nom</td><td>Espace total</td><td>Utilisé</td><td>Libre</td><td>Pourcentage</td></tr>"
