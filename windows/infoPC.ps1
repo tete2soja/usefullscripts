@@ -43,10 +43,15 @@ if (!(Test-Connection -computername $computerName -Quiet -Count 1)) {
 $style = "<style>
 body {
     font-family: Tahoma, Geneva, Kalimati, sans-serif;
+    text-align: center;
 }
 table, th, td {
     border: 1px solid black;
     border-collapse: collapse;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 5px;
+    padding-right: 5px;
 }
 </style>"
 
@@ -178,8 +183,8 @@ $content += "</table>"
 $office = Get-WMIObject -ComputerName $computerName win32_SoftwareFeature | select ProductName,Version -Unique | sort ProductName | where {$_.ProductName -like "Microsoft Office*" }
 
 # Ecriture du résultat dans le fichier HTML
-ConvertTo-Html -Title "$computerName - Infos" -Body $content - $style | Out-File C:\$computerName.html
+ConvertTo-Html -Title "$computerName - Infos" -Body $content - $style | Out-File "$HOME\WinRM\$computerName.html"
 
 # MaJ du fichier pour les statistiques
-if ( !(Test-Path C:\stats.csv) ) { Out-File -FilePath C:\stats.csv -Encoding "utf8" -InputObject "buildnumber,name,ram,cpu,coeur,office,officeVersion" }
-Out-File -Append -FilePath C:\stats.csv -Encoding "utf8" -InputObject "$($os.buildnumber),$($os.Caption),$ram,$($cpu.Name),$($cpu.NumberOfCores),$($office.ProductName),$($office.Version)"
+if ( !(Test-Path "$HOME\WinRM\stats.csv") ) { Out-File -FilePath "$HOME\WinRM\stats.csv" -Encoding "utf8" -InputObject "buildnumber,name,ram,cpu,coeur,office,officeVersion" }
+Out-File -Append -FilePath "$HOME\WinRM\stats.csv" -Encoding "utf8" -InputObject "$($os.buildnumber),$($os.Caption),$ram,$($cpu.Name),$($cpu.NumberOfCores),$($office.ProductName),$($office.Version)"
