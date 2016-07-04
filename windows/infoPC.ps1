@@ -90,7 +90,7 @@ Write-Host "Get informations about serial..."
 $serial = $((Get-CimInstance -ComputerName $computerName -Class Win32_Bios).SerialNumber)
 
 Write-Host "Get informations about installed softwares..."
-#$applications = Get-WMIObject -ComputerName $computerName win32_SoftwareFeature | select ProductName,Version -Unique | sort ProductName
+$applications = Get-WMIObject -ComputerName $computerName -Class Win32_SoftwareFeature | select ProductName,Version -Unique | sort ProductName
 
 $ip = $networkCard.IPAddress
 
@@ -166,6 +166,7 @@ foreach($disk in $disks) {
     $content += "<td>$('{0:N2}' -f $pourcentage)</td></tr>"
 }
 $content += "</table><br/>"
+
 $content += "<table><tr><td>Nom</td></tr>"
 $content += "<h2>Partages ouverts</h2>"
 Write-Host "Partages ouverts :"
@@ -180,7 +181,7 @@ $content += "</table>"
 Write-Host "Liste des applications"
 $content += "<h2>Liste des applications</h2>"
 Write-Host $applications
-$content += "<table><tr><td>Nom</td><td>Version</td><td>Date d'installation</td></tr>"
+$content += "<table><tr><td>Nom</td><td>Version</td></tr>"
 foreach($application in $applications) {
     $content += "<tr>"
     $content += "<td>$($application.ProductName)</td>"
@@ -189,7 +190,7 @@ foreach($application in $applications) {
 }
 $content += "</table>"
 
-$office = Get-WMIObject -ComputerName $computerName win32_SoftwareFeature | select ProductName,Version -Unique | sort ProductName | where {$_.ProductName -like "Microsoft Office*" }
+$office = $applications | where {$_.ProductName -like "Microsoft Office Word*" }
 
 # Creation du dossier de sortie
 if ( !(Test-Path "$HOME\WinRM") ) { New-Item -ItemType Directory "$HOME\WinRM" }
