@@ -47,7 +47,9 @@ if ($LASTEXITCODE) {
 
 # =============================================================================
 # Style CSS pour le rendu HTML
-$style = "<style>
+$head = "
+<title>$computerName - Infos</title>
+<style>
 body {
     font-family: Tahoma, Geneva, Kalimati, sans-serif;
     text-align: center;
@@ -193,7 +195,7 @@ $office = Get-WMIObject -ComputerName $computerName win32_SoftwareFeature | sele
 if ( !(Test-Path "$HOME\WinRM") ) { New-Item -ItemType Directory "$HOME\WinRM" }
 
 # Ecriture du résultat dans le fichier HTML
-ConvertTo-Html -Title "$computerName - Infos" -Body $content - $style | Out-File "$HOME\WinRM\$computerName.html"
+ConvertTo-Html -Body $content -Head $head | Out-File "$HOME\WinRM\$computerName.html"
 
 # MaJ du fichier pour les statistiques
 if ( !(Test-Path "$HOME\WinRM\stats.csv") ) { Out-File -FilePath "$HOME\WinRM\stats.csv" -Encoding "utf8" -InputObject "buildnumber,name,ram,cpu,coeur,office,officeVersion" }
