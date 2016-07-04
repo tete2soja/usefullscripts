@@ -163,7 +163,7 @@ $content += "</table>"
 Write-Host "Liste des applications"
 $content += "<h2>Liste des applications</h2>"
 Write-Host $applications
-$content += "<table><tr><td>Nom</td><td>Date d'installation</td></tr>"
+$content += "<table><tr><td>Nom</td><td>Version</td><td>Date d'installation</td></tr>"
 foreach($application in $applications) {
     $content += "<tr>"
     $content += "<td>$($application.ProductName)</td>"
