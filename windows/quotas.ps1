@@ -20,7 +20,7 @@
 $i = 0
 $j = 0
 $year = Get-Date -UFormat %Y
-$pathLog = "log_" + $year + ".csv"
+$pathLog = "logs\log_" + $year + ".csv"
 $date = Get-Date -Format g
 
 if (!(Test-Path $pathLog))
@@ -32,7 +32,8 @@ $colItems = Get-FsrmQuota
 
 $modif_quod = "<h1>Augmentations effectuees</h1><table style=`"border-collapse: collapse;`"><tr><td>Nom</td><td>Utilisation (GB)</td><td>Total (GB)</td><td>Occupation (%)</td></tr>"
 
-foreach ($objItem in $colItems) { 
+foreach ($objItem in $colItems)
+{ 
     #Write-Host "QuotaUsed : " $objItem.Usage 
     #Write-Host "QuotaLimit: " $objItem.Size
     #Write-Host "Path: " $objItem.Path
@@ -59,8 +60,19 @@ foreach ($objItem in $colItems) {
         $modif_quod += "<tr><td>$path</td>"
         $modif_quod += "<td>$([math]::round($objItem.Usage/1GB,2))</td>"
         $modif_quod += "<td>$quota</td>"
-        $modif_quod += "<td>$($objItem.Pourcentage)</td></tr>"
+        $modif_quod += "<td>$([math]::round(($objItem.Usage/$objItem.Size)*100,2))</td></tr>"
     }
+
+    # Diminution du quota si trop peu rempli
+    else if ($objItem.Size -lt 0.75)
+    {
+        $size = $objItem.Usage / 0.90
+        $path = $objItem.Path
+        $quota = $size / 1GB
+        Set-FsrmQuota -Path $objItem.Path -Size $size
+        Add-Content $pathLog $date";"$path";"$quota
+    }
+
     if ( $objItem.Size -gt 15GB )
     {
         $i++
@@ -68,9 +80,6 @@ foreach ($objItem in $colItems) {
 }
 
 $modif_quod += "</table>"
-
-Write-Host "Quotas > 15Go : "$i
-Write-Host "Quotas modifiés : "$j
 
 $shares = $colItems | Sort-Object -Descending Size | Select-Object -First 20 -Property Path,Usage,@{Label="Quotas"; Expression={[math]::round($_.Size/1GB,2)}},@{Label="Pourcentage"; Expression={[math]::round(($_.Usage/$_.Size)*100,2)}}
 
