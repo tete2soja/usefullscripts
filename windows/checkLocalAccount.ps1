@@ -112,7 +112,7 @@ Add-Content -Path $file_output $colonnes
 # -----------------------------------------------------------------------------
 # Serveurs
 # -----------------------------------------------------------------------------
-$serveurs = Invoke-Command -ComputerName $dc -ScriptBlock { (Get-ADComputer -Filter * -SearchBase "OU=Serveurs,$($args[0])" -Properties OperatingSystem) } -credential $mycred -ArgumentList $partition
+$serveurs = Get-ADComputer -Filter * -SearchBase "OU=Serveurs,$partition" -Properties OperatingSystem
 
 foreach($serveur in $serveurs)
 {
@@ -134,7 +134,7 @@ foreach($serveur in $serveurs)
 # -----------------------------------------------------------------------------
 # Ordinateurs
 # -----------------------------------------------------------------------------
-$ordinateurs = Invoke-Command -ComputerName $dc -ScriptBlock { (Get-ADComputer -Filter * -SearchBase "OU=LAN-Kermene,$($args[0])" -Properties OperatingSystem) } -credential $mycred -ArgumentList $partition
+$ordinateurs = Get-ADComputer -Filter * -SearchBase "OU=Ordinateurs,$partition" -Properties OperatingSystem
 
 foreach($ordinateur in $ordinateurs)
 {
