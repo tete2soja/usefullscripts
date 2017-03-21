@@ -10,7 +10,7 @@ $mycred = Get-Credential
 if(($dc = (Get-ADDomainController).Name) -eq "") { Write-Host "Aucun serveur DC trouvé"; exit -1 }
 
 $PCs = Invoke-Command -ComputerName $dc -ScriptBlock { (Get-ADComputer -Filter *).Name } -credential $mycred
-$serveurs = Invoke-Command -ComputerName $dc -ScriptBlock { (Get-ADComputer -Filter * -SearchBase "OU=Serveurs,DC=kermene,DC=fr").Name } -credential $mycred
+$serveurs = Invoke-Command -ComputerName $dc -ScriptBlock { (Get-ADComputer -Filter * -SearchBase "OU=Serveurs,DC=domain,DC=tld").Name } -credential $mycred
 
 Remove-Item "licencestatus.csv"
 Add-Content "licencestatus.csv" "Nom;Type;Status licence"
