@@ -19,8 +19,12 @@
 # Variables
 $i = 0
 $j = 0
+# Chemin du fichier de sortie
 $year = Get-Date -UFormat %Y
-$pathLog = "logs\log_" + $year + ".csv"
+$moth = Get-Date -UFormat %m
+$day = Get-Date -UFormat %d
+$path = "logs\" + $year + "_" + $moth + "_" + $day
+$file_output = "logs\" + $year + "_" + $moth + "_" + $day + "\comptes_locaux.csv"
 $date = Get-Date -Format g
 
 if (!(Test-Path $pathLog))
@@ -31,6 +35,7 @@ if (!(Test-Path $pathLog))
 $colItems = Get-FsrmQuota
 
 $modif_quod = "<h1>Augmentations effectuees</h1><table style=`"border-collapse: collapse;`"><tr><td>Nom</td><td>Utilisation (GB)</td><td>Total (GB)</td><td>Occupation (%)</td></tr>"
+$diminution_quod = "<h1>Diminutions effectuees</h1><table style=`"border-collapse: collapse;`"><tr><td>Nom</td><td>Utilisation (GB)</td><td>Total (GB)</td><td>Occupation (%)</td></tr>"
 
 foreach ($objItem in $colItems)
 { 
@@ -59,16 +64,26 @@ foreach ($objItem in $colItems)
 
         $modif_quod += "<tr><td>$path</td>"
         $modif_quod += "<td>$([math]::round($objItem.Usage/1GB,2))</td>"
-        $modif_quod += "<td>$quota</td>"
+        $modif_quod += "<td>$([math]::round($quota/1GB,2))</td>"
         $modif_quod += "<td>$([math]::round(($objItem.Usage/$objItem.Size)*100,2))</td></tr>"
     }
 
     # Diminution du quota si trop peu rempli
-    else if ($objItem.Size -lt 0.75)
+    elseif ($objItem.Usage / $objItem.Size -lt 0.75)
     {
         $size = $objItem.Usage / 0.90
+        if($size / 1MB -lt 400)
+        {
+            $size = 400 * 1MB
+        }
         $path = $objItem.Path
         $quota = $size / 1GB
+        if ($objItem.Size -ne $size) {            
+            $diminution_quod += "<tr><td>$path</td>"
+            $diminution_quod += "<td>$([math]::round($objItem.Usage/1GB,2))</td>"
+            $diminution_quod += "<td>$([math]::round($quota/1GB,2))</td>"
+            $diminution_quod += "<td>$([math]::round(($objItem.Usage/$objItem.Size)*100,2))</td></tr>"
+        }
         Set-FsrmQuota -Path $objItem.Path -Size $size
         Add-Content $pathLog $date";"$path";"$quota
     }
@@ -80,6 +95,7 @@ foreach ($objItem in $colItems)
 }
 
 $modif_quod += "</table>"
+$diminution_quod += "</table>"
 
 $shares = $colItems | Sort-Object -Descending Size | Select-Object -First 20 -Property Path,Usage,@{Label="Quotas"; Expression={[math]::round($_.Size/1GB,2)}},@{Label="Pourcentage"; Expression={[math]::round(($_.Usage/$_.Size)*100,2)}}
 
@@ -87,6 +103,7 @@ $shares = $colItems | Sort-Object -Descending Size | Select-Object -First 20 -Pr
 # Creation du corps du mail
 $tab = "<head><style type=`"text/css`">table{border-collapse:collapse}td,th{border:1px solid #000}</style></head>"
 $tab += $modif_quod
+$tab += $diminution_quod
 $tab += "<h1>Top 20 quotas</h1><table style=`"border-collapse: collapse;`"><tr><td>Nom</td><td>Utilisation (GB)</td><td>Total (GB)</td><td>Occupation (%)</td><td>Responsable</td></tr>"
 
 foreach($s in $shares)
@@ -121,7 +138,7 @@ foreach($s in $shares)
 
 $tab += "</table>"
 
-$tab += "<h1>Top 20 des augmentation des quotas annuel</h1><table><tr><td>Nom</td><td>Nb augmentation</td></tr>"
+$tab += "<h1>Top 20 des augmentation des quotas annuel</h1><table><tr><td>Nom</td><td>Nb augmentation</td><td>Taille</td></tr>"
 
 $CSV = Import-Csv $pathLog -Delimiter ";"
 $count = @{}
@@ -141,9 +158,11 @@ $count = $count.GetEnumerator() | Sort-Object -Property key | Sort-Object -Desce
 
 foreach ($a in $count)
 {
+    $quota = Get-FsrmQuota -Path $a.Name
     $tab += "<tr>"
     $tab += "<td>$($a.Name)</td>"
     $tab += "<td>$($a.Value)</td>"
+    $tab += "<td>$([math]::round($quota.Size/1GB,2))</td>"
     $tab += "</tr>"
 }
 $tab += "</table>"
@@ -187,10 +206,11 @@ $tab += "</table>"
 # ==== Mail ===================================================================
 # Serveur de mail via le champ MX du domaine
 $smtp = (Resolve-DnsName -Type MX -Name $env:USERDNSDOMAIN).NameExchange
-$from = "xxx@domain.tld"
-$to = "xxx@domain.tld"
+$from = "rapport@kermene.fr"
+$to = "frederic.jalet@kermene.fr"
 $cc = @()
-$cc += "xxx@domain.tld"
-$cc += "xxx@domain.tld"
+$cc += "nicolas.legall@kermene.fr"
+$cc += "jeancharles.dauvergne@kermene.fr"
+$cc += "yoann.lebris@kermene.fr"
 
 Send-MailMessage -From $from -To $to -Cc $cc -BodyAsHtml $tab -Subject "[Quotas] Rapport" -SmtpServer $smtp
