@@ -206,11 +206,9 @@ $tab += "</table>"
 # ==== Mail ===================================================================
 # Serveur de mail via le champ MX du domaine
 $smtp = (Resolve-DnsName -Type MX -Name $env:USERDNSDOMAIN).NameExchange
-$from = "rapport@kermene.fr"
-$to = "frederic.jalet@kermene.fr"
+$from = "rapport@domain.tld"
+$to = "user@domain.tld"
 $cc = @()
-$cc += "nicolas.legall@kermene.fr"
-$cc += "jeancharles.dauvergne@kermene.fr"
-$cc += "yoann.lebris@kermene.fr"
+$cc += "nicolas.legall@domain.tld"
 
 Send-MailMessage -From $from -To $to -Cc $cc -BodyAsHtml $tab -Subject "[Quotas] Rapport" -SmtpServer $smtp
